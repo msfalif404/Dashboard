@@ -74,7 +74,8 @@ with st.container():
 
     st.plotly_chart(fig)
 
-with st.container():
+@st.cache_data
+def create_correlations():
     corr_df = df.copy()
     corr_df['Churn Label'].replace({'Yes' : 1, 'No' : 0}, inplace=True)
 
@@ -95,6 +96,11 @@ with st.container():
 
     fig = go.Figure(data=bar, layout=layout)
     fig.update_traces(texttemplate='%{y:.2f}', textposition='outside')
+
+    return fig
+    
+with st.container():
+    fig = create_correlations()
     st.plotly_chart(fig, use_container_width=True)
 
 with st.container():
@@ -161,6 +167,7 @@ with st.container():
     st.plotly_chart(fig)
 
 quantile = df['Monthly Purchase'].quantile([0.25, 0.5, 0.75])
+@st.cache_data
 def categorized_purchased(monthly_purchase):
     if monthly_purchase <= quantile[0.25]:
         return 'Pembelian Rendah'
@@ -172,6 +179,7 @@ def categorized_purchased(monthly_purchase):
 df['Monthly Purchase Category'] = df['Monthly Purchase'].apply(categorized_purchased)
 
 quartiles = df['CLTV'].quantile([0.25, 0.5, 0.75])
+@st.cache_data
 def categorized_cltv(cltv):
     if cltv <= quartiles[0.25]:
         return 'CLTV Rendah'
@@ -181,6 +189,7 @@ def categorized_cltv(cltv):
         return 'CLTV Tinggi'
 df['CLTV Category'] = df['CLTV'].apply(categorized_cltv)
 
+@st.cache_data
 def create_segmentation():
     # Buat kolom baru 'Segment' dengan nilai awal 'Other' untuk semua pelanggan
     df['Segment'] = 'Other'
@@ -229,7 +238,6 @@ def create_segmentation():
     segment_df = df[['Customer ID', 'CLTV Category', 'Monthly Purchase Category', 'Tenure Status', 'Segment']]
 
     return segment_df
-
 segment_df = create_segmentation()
 
 with st.container():
