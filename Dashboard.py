@@ -57,6 +57,24 @@ with st.container():
     st.plotly_chart(fig, use_container_width=True)
 
 with st.container():
+    fig = px.box(df, x='Churn Label', y='Tenure Months')
+    fig.update_layout(title='Box Plot Tenure Months untuk Churn Label = Yes dan Churn Label = No')
+
+    st.plotly_chart(fig)
+
+with st.container():
+    fig = px.box(df, x='Churn Label', y='Monthly Purchase')
+    fig.update_layout(title='Box Plot Monthly Purchase untuk Churn Label = Yes dan Churn Label = No')
+
+    st.plotly_chart(fig)
+
+with st.container():
+    fig = px.box(df, x='Churn Label', y='CLTV')
+    fig.update_layout(title='Box Plot CLTV untuk Churn Label = Yes dan Churn Label = No')
+
+    st.plotly_chart(fig)
+
+with st.container():
     corr_df = df.copy()
     corr_df['Churn Label'].replace({'Yes' : 1, 'No' : 0}, inplace=True)
 
@@ -78,3 +96,144 @@ with st.container():
     fig = go.Figure(data=bar, layout=layout)
     fig.update_traces(texttemplate='%{y:.2f}', textposition='outside')
     st.plotly_chart(fig, use_container_width=True)
+
+with st.container():
+    fig = px.histogram(df, x='Payment Method', color='Churn Label', barmode='group', title='Distribusi Metode Pembayaran')
+    fig.update_layout(
+        xaxis_title='Payment Method',
+        yaxis_title='Count'
+    )
+
+    st.plotly_chart(fig)
+
+with st.container():
+    fig = px.histogram(df, x='Device Class', color='Churn Label', barmode='group', title='Distribusi Device Class')
+    fig.update_layout(
+        xaxis_title='Device Class',
+        yaxis_title='Count',
+    )
+
+    st.plotly_chart(fig)
+
+with st.container():
+    fig = px.histogram(df, x='Education Product', color='Churn Label', barmode='group', title='Distribusi Education Product')
+    fig.update_layout(
+        xaxis_title='Education Product',
+        yaxis_title='Count'
+    )
+
+    st.plotly_chart(fig)
+
+with st.container():
+    fig = px.histogram(df, x='Games Product', color='Churn Label', barmode='group', title='Distribusi Games Product')
+    fig.update_layout(
+        xaxis_title='Games Product',
+        yaxis_title='Count'
+    )
+
+    st.plotly_chart(fig)
+
+with st.container():
+    fig = px.histogram(df, x='Music Product', color='Churn Label', barmode='group', title='Distribusi Music Product')
+    fig.update_layout(
+        xaxis_title='Music Product',
+        yaxis_title='Count'
+    )
+
+    st.plotly_chart(fig)
+
+with st.container():
+    fig = px.histogram(df, x='Monthly Purchase', color='Device Class', barmode='overlay', title='Histogram Monthly Purchase dengan Device Class')
+    fig.update_layout(
+        xaxis_title='Monthly Purchase',
+        yaxis_title='Count',
+    )
+
+    st.plotly_chart(fig)
+
+with st.container():
+    fig = px.histogram(df, x='Monthly Purchase', color='Payment Method', barmode='overlay', title='Histogram Monthly Purchase dengan Payment Method')
+    fig.update_layout(
+        xaxis_title='Monthly Purchase',
+        yaxis_title='Count',
+    )
+
+    st.plotly_chart(fig)
+
+quantile = df['Monthly Purchase'].quantile([0.25, 0.5, 0.75])
+def categorized_purchased(monthly_purchase):
+    if monthly_purchase <= quantile[0.25]:
+        return 'Pembelian Rendah'
+    elif monthly_purchase <= quantile[0.5]:
+        return 'Pembelian Menengah'
+    else:
+        return 'Pembelian Tinggi'
+
+df['Monthly Purchase Category'] = df['Monthly Purchase'].apply(categorized_purchased)
+
+quartiles = df['CLTV'].quantile([0.25, 0.5, 0.75])
+def categorized_cltv(cltv):
+    if cltv <= quartiles[0.25]:
+        return 'CLTV Rendah'
+    elif cltv <= quartiles[0.5]:
+        return 'CLTV Menengah'
+    else:
+        return 'CLTV Tinggi'
+df['CLTV Category'] = df['CLTV'].apply(categorized_cltv)
+
+def create_segmentation():
+    # Buat kolom baru 'Segment' dengan nilai awal 'Other' untuk semua pelanggan
+    df['Segment'] = 'Other'
+
+    # Segment Champions
+    df.loc[(df['CLTV Category'] == 'CLTV Tinggi') &
+        (df['Monthly Purchase Category'] == 'Pembelian Tinggi') &
+        (df['Tenure Months'] >= 37), 'Segment'] = 'Champions'
+
+    # Segment High Potential Customer
+    df.loc[(df['CLTV Category'] == 'CLTV Menengah') &
+        (df['Monthly Purchase Category'] == 'Pembelian Menengah') &
+        (df['Tenure Months'] >= 1), 'Segment'] = 'High Potential Customer'
+
+    # Segment Loyal Customer
+    df.loc[(df['CLTV Category'] == 'CLTV Tinggi') &
+        (df['Tenure Status'] == 'Pelanggan 5 Tahun'), 'Segment'] = 'Loyal Customer'
+
+    # Segment Promising
+    df.loc[(df['CLTV Category'] == 'CLTV Menengah') &
+        (df['Monthly Purchase Category'] == 'Pembelian Menengah') &
+        ((df['Tenure Status'] == 'Pelanggan 3 Tahun') |
+            df['Tenure Status'] == 'Pelanggan 4 Tahun'), 'Segment'] = 'Promising'
+
+    # Segment Need Attention Customer
+    df.loc[(df['CLTV Category'] == 'CLTV Rendah') &
+        (df['Monthly Purchase Category'] == 'Pembelian Rendah') &
+        (df['Tenure Status'] != 'Pelanggan lebih dari 5 Tahun'), 'Segment'] = 'Need Attention Customer'
+
+    # Segment Hibernating
+    df.loc[(df['CLTV Category'] == 'CLTV Rendah') &
+        (df['Monthly Purchase Category'] == 'Pembelian Rendah') &
+        (df['Tenure Status'] == 'Pelanggan 5 Tahun'), 'Segment'] = 'Hibernating'
+
+    # Segment New Customer
+    df.loc[(df['Tenure Status'] == 'Pelanggan 1 Tahun') &
+        (df['CLTV Category'] == 'CLTV Rendah'), 'Segment'] = 'New Customer'
+
+    # Segment New Customer
+    df.loc[(df['Tenure Status'] == 'Pelanggan 2 Tahun') &
+        ((df['CLTV Category'] == 'CLTV Rendah') |
+            (df['CLTV Category'] == 'CLTV Sedang') |
+            (df['CLTV Category'] == 'CLTV Tinggi')), 'Segment'] = 'About To Churn'
+
+    # Tampilkan hasil segmentasi
+    segment_df = df[['Customer ID', 'CLTV Category', 'Monthly Purchase Category', 'Tenure Status', 'Segment']]
+
+    return segment_df
+
+segment_df = create_segmentation()
+
+with st.container():
+    segment = segment_df.groupby('Segment')['Customer ID'].nunique().reset_index()
+    fig = px.pie(segment, values='Customer ID', names='Segment', title='Customer Segmentation')
+
+    st.plotly_chart(fig)
