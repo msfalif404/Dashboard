@@ -4,6 +4,7 @@ import pickle
 
 def show_predict_churn_from_file():
     st.header('Predicting Customer Churn ✨')
+    st.write('Predicted files will be downloaded after predicting completed')
 
     uploaded_file = st.file_uploader("Choose a file")
     if uploaded_file is not None:
@@ -37,6 +38,6 @@ def show_predict_churn_from_file():
 
             dataframe['Churn Prediction'] = ['Yes' if prob >= 0.5 else 'No' for prob in churn_probabilities]
             for i in range(1, len(dataframe)):
-                dataframe['CLTV Prediction'] = round(data['AdaBoost_CLTV'].predict(dataframe.iloc[(i-1):i, :])[0], 2)
+                dataframe.at[i-1, 'CLTV Prediction'] = round(data['AdaBoost_CLTV'].predict(dataframe.iloc[(i-1):i, :])[0], 2)
 
-            dataframe.iloc[1]['CLTV Prediction']
+            dataframe
