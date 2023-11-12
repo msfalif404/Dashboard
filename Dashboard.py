@@ -7,6 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from helper.categorize_tenure import categorize_tenure
+from sklearn.cluster import KMeans
 
 # Reading The Dataset
 df = pd.read_excel('telco_dataset.xlsx')
@@ -51,33 +52,49 @@ with col1:
 with col2:
     st.metric("Customer Churn ❌", value=f"{round(churn_percentage,2)}%")
 
-with st.container():
+@st.cache_data
+def show_tenure_total():
     fig = px.bar(df_churn_all, x='Tenure Status', y='Total Customer', color='Churn Label', barmode='group')
     fig.update_layout(title='Customer Churn Based On Tenure Month')
     st.plotly_chart(fig, use_container_width=True)
 
 with st.container():
+    show_tenure_total()
+
+@st.cache_data
+def show_churn_boxplot():
     fig = px.box(df, x='Churn Label', y='Tenure Months')
     fig.update_layout(title='Box Plot Tenure Months untuk Churn Label = Yes dan Churn Label = No')
 
     st.plotly_chart(fig)
-
+ 
 with st.container():
+    show_churn_boxplot()
+
+@st.cache_data
+def show_monthly_purchase_boxplot():
     fig = px.box(df, x='Churn Label', y='Monthly Purchase')
     fig.update_layout(title='Box Plot Monthly Purchase untuk Churn Label = Yes dan Churn Label = No')
 
     st.plotly_chart(fig)
 
 with st.container():
+    show_monthly_purchase_boxplot()
+   
+@st.cache_data
+def show_cltv_boxplot():
     fig = px.box(df, x='Churn Label', y='CLTV')
     fig.update_layout(title='Box Plot CLTV untuk Churn Label = Yes dan Churn Label = No')
 
     st.plotly_chart(fig)
 
+with st.container():
+    show_cltv_boxplot()
+
 @st.cache_data
 def create_correlations():
     corr_df = df.copy()
-    corr_df['Churn Label'].replace({'Yes' : 1, 'No' : 0}, inplace=True)
+    corr_df['Churn Label'].replace({'Yes': 1, 'No': 0}, inplace=True)
 
     dummies = pd.get_dummies(corr_df[['Churn Label', 'Device Class', 'Games Product', 'Music Product',
                                     'Education Product', 'Call Center', 'Video Product', 'Use MyApp',
@@ -85,14 +102,14 @@ def create_correlations():
 
     df_dummies = pd.DataFrame({'Feature': dummies.columns,
                             'Correlation': dummies.corr()['Churn Label']
-                            })
+                            }).sort_values(by='Correlation', ascending=False)
 
     bar = go.Bar(x=df_dummies['Feature'][1:], y=df_dummies['Correlation'][1:])
 
     layout = go.Layout(title='Korelasi Data Kategorikal dengan Customer yang Churn',
-                            xaxis=dict(title='Produk'),
-                            yaxis=dict(title='Korelasi'),
-                            height=800)
+                    xaxis=dict(title='Fitur'),
+                    yaxis=dict(title='Korelasi'),
+                    height=800)
 
     fig = go.Figure(data=bar, layout=layout)
     fig.update_traces(texttemplate='%{y:.2f}', textposition='outside')
@@ -103,7 +120,8 @@ with st.container():
     fig = create_correlations()
     st.plotly_chart(fig, use_container_width=True)
 
-with st.container():
+@st.cache_data
+def show_payment_method_distribution():
     fig = px.histogram(df, x='Payment Method', color='Churn Label', barmode='group', title='Distribusi Metode Pembayaran')
     fig.update_layout(
         xaxis_title='Payment Method',
@@ -111,8 +129,12 @@ with st.container():
     )
 
     st.plotly_chart(fig)
-
+    
 with st.container():
+    show_payment_method_distribution()
+
+@st.cache_data
+def show_device_class_distribution():
     fig = px.histogram(df, x='Device Class', color='Churn Label', barmode='group', title='Distribusi Device Class')
     fig.update_layout(
         xaxis_title='Device Class',
@@ -122,6 +144,10 @@ with st.container():
     st.plotly_chart(fig)
 
 with st.container():
+    show_device_class_distribution()
+    
+@st.cache_data    
+def show_education_product_distribution():
     fig = px.histogram(df, x='Education Product', color='Churn Label', barmode='group', title='Distribusi Education Product')
     fig.update_layout(
         xaxis_title='Education Product',
@@ -131,6 +157,10 @@ with st.container():
     st.plotly_chart(fig)
 
 with st.container():
+    show_education_product_distribution()
+
+@st.cache_data
+def show_games_product_distribution():
     fig = px.histogram(df, x='Games Product', color='Churn Label', barmode='group', title='Distribusi Games Product')
     fig.update_layout(
         xaxis_title='Games Product',
@@ -140,6 +170,10 @@ with st.container():
     st.plotly_chart(fig)
 
 with st.container():
+    show_games_product_distribution()
+
+@st.cache_data
+def show_music_product_distribution():
     fig = px.histogram(df, x='Music Product', color='Churn Label', barmode='group', title='Distribusi Music Product')
     fig.update_layout(
         xaxis_title='Music Product',
@@ -149,6 +183,10 @@ with st.container():
     st.plotly_chart(fig)
 
 with st.container():
+    show_music_product_distribution()
+
+@st.cache_data
+def show_histogram_monthly_device_purchase():
     fig = px.histogram(df, x='Monthly Purchase', color='Device Class', barmode='overlay', title='Histogram Monthly Purchase dengan Device Class')
     fig.update_layout(
         xaxis_title='Monthly Purchase',
@@ -158,6 +196,10 @@ with st.container():
     st.plotly_chart(fig)
 
 with st.container():
+    show_histogram_monthly_device_purchase()
+
+@st.cache_data
+def show_histogram_monthly_payment_purchase():
     fig = px.histogram(df, x='Monthly Purchase', color='Payment Method', barmode='overlay', title='Histogram Monthly Purchase dengan Payment Method')
     fig.update_layout(
         xaxis_title='Monthly Purchase',
@@ -166,6 +208,9 @@ with st.container():
 
     st.plotly_chart(fig)
 
+with st.container():
+    show_histogram_monthly_payment_purchase()
+   
 quantile = df['Monthly Purchase'].quantile([0.25, 0.5, 0.75])
 @st.cache_data
 def categorized_purchased(monthly_purchase):
@@ -189,59 +234,69 @@ def categorized_cltv(cltv):
         return 'CLTV Tinggi'
 df['CLTV Category'] = df['CLTV'].apply(categorized_cltv)
 
+@st.cache_resource
+def create_clustering_model_cltv():
+    X = df.iloc[:, [1, 15]].values
+    kmeans = KMeans(n_clusters = 3, init = 'k-means++', random_state = 42)
+    y_kmeans = kmeans.fit_predict(X)
+
+    return y_kmeans
+
+df['Cluster'] = create_clustering_model_cltv()
+
 @st.cache_data
-def create_segmentation():
-    # Buat kolom baru 'Segment' dengan nilai awal 'Other' untuk semua pelanggan
-    df['Segment'] = 'Other'
+def label_cluster(row):
+    if row['Cluster'] == 0:
+        return 'High-Value Long-Term Customers'
+    elif row['Cluster'] == 1:
+        return 'Low-Value Short-Term Customers'
+    elif row['Cluster'] == 2:
+        return 'Mid-Value Mid-Term Customers'
+    else:
+        return 'Other'
 
-    # Segment Champions
-    df.loc[(df['CLTV Category'] == 'CLTV Tinggi') &
-        (df['Monthly Purchase Category'] == 'Pembelian Tinggi') &
-        (df['Tenure Months'] >= 37), 'Segment'] = 'Champions'
-
-    # Segment High Potential Customer
-    df.loc[(df['CLTV Category'] == 'CLTV Menengah') &
-        (df['Monthly Purchase Category'] == 'Pembelian Menengah') &
-        (df['Tenure Months'] >= 1), 'Segment'] = 'High Potential Customer'
-
-    # Segment Loyal Customer
-    df.loc[(df['CLTV Category'] == 'CLTV Tinggi') &
-        (df['Tenure Status'] == 'Pelanggan 5 Tahun'), 'Segment'] = 'Loyal Customer'
-
-    # Segment Promising
-    df.loc[(df['CLTV Category'] == 'CLTV Menengah') &
-        (df['Monthly Purchase Category'] == 'Pembelian Menengah') &
-        ((df['Tenure Status'] == 'Pelanggan 3 Tahun') |
-            df['Tenure Status'] == 'Pelanggan 4 Tahun'), 'Segment'] = 'Promising'
-
-    # Segment Need Attention Customer
-    df.loc[(df['CLTV Category'] == 'CLTV Rendah') &
-        (df['Monthly Purchase Category'] == 'Pembelian Rendah') &
-        (df['Tenure Status'] != 'Pelanggan lebih dari 5 Tahun'), 'Segment'] = 'Need Attention Customer'
-
-    # Segment Hibernating
-    df.loc[(df['CLTV Category'] == 'CLTV Rendah') &
-        (df['Monthly Purchase Category'] == 'Pembelian Rendah') &
-        (df['Tenure Status'] == 'Pelanggan 5 Tahun'), 'Segment'] = 'Hibernating'
-
-    # Segment New Customer
-    df.loc[(df['Tenure Status'] == 'Pelanggan 1 Tahun') &
-        (df['CLTV Category'] == 'CLTV Rendah'), 'Segment'] = 'New Customer'
-
-    # Segment New Customer
-    df.loc[(df['Tenure Status'] == 'Pelanggan 2 Tahun') &
-        ((df['CLTV Category'] == 'CLTV Rendah') |
-            (df['CLTV Category'] == 'CLTV Sedang') |
-            (df['CLTV Category'] == 'CLTV Tinggi')), 'Segment'] = 'About To Churn'
-
-    # Tampilkan hasil segmentasi
-    segment_df = df[['Customer ID', 'CLTV Category', 'Monthly Purchase Category', 'Tenure Status', 'Segment']]
-
-    return segment_df
-segment_df = create_segmentation()
+df['CLTV Label'] = df.apply(label_cluster, axis=1)
 
 with st.container():
-    segment = segment_df.groupby('Segment')['Customer ID'].nunique().reset_index()
-    fig = px.pie(segment, values='Customer ID', names='Segment', title='Customer Segmentation')
+    data = {
+        'Customer Type': df[df['Churn Label'] == 'No']['CLTV Label'].value_counts().index,
+        'Count': df[df['Churn Label'] == 'No']['CLTV Label'].value_counts().values
+    }
+    pie_cltv_label_df = pd.DataFrame(data)
+    fig = px.pie(pie_cltv_label_df, names='Customer Type', values='Count', title='Distribusi Retain Customer Segmentation By CLTV')
+
+    st.plotly_chart(fig)
+
+@st.cache_resource
+def create_clustering_model_monthly():
+    X = df.iloc[:, [1, 11]].values
+    kmeans = KMeans(n_clusters = 4, init = 'k-means++', random_state = 42)
+    y_kmeans = kmeans.fit_predict(X)
+
+    return y_kmeans
+
+df['Cluster'] = create_clustering_model_monthly()
+
+def label_clusters(row):
+    if row['Cluster'] == 0:
+        return "Low Purchase Short-Term Customers"
+    elif row['Cluster'] == 1:
+        return "High Purchase Short-Term Customers"
+    elif row['Cluster'] == 2:
+        return "Low Purchase Long Term Customers"
+    elif row['Cluster'] == 3:
+        return "High Purchase Long-Term Customers"
+    else:
+        return "Other"
+
+df['Monthly Purchase Label'] = df.apply(label_clusters, axis=1)
+
+with st.container():
+    data = {
+        'Customer Type': df[df['Churn Label'] == 'No']['Monthly Purchase Label'].value_counts().index,
+        'Count': df[df['Churn Label'] == 'No']['Monthly Purchase Label'].value_counts().values
+    }
+    pie_cltv_label_df = pd.DataFrame(data)
+    fig = px.pie(pie_cltv_label_df, names='Customer Type', values='Count', title='Distribusi Retain Customer Segmentation By Monthly Purchase')
 
     st.plotly_chart(fig)
