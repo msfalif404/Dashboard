@@ -36,7 +36,7 @@ def show_predict_churn_from_file():
             churn_prediction = data['LGBM_Churn'].predict_proba(dataframe)
             churn_probabilities = churn_prediction[:, 1]
 
-            dataframe['CLTV Prediction'] = 0
+            dataframe['CLTV Prediction'] = None
 
             dataframe['Churn Prediction'] = ['Yes' if prob >= 0.5 else 'No' for prob in churn_probabilities]
             for i in range(1, len(dataframe) + 1):
