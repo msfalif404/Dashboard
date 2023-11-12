@@ -6,7 +6,11 @@ import plotly.graph_objects as go
 
 def show_predict_churn_from_file():
     st.header('Predicting Customer Churn ✨')
+<<<<<<< HEAD
     st.write('Predicted churn spreadsheet file will be downloaded after predicting completed')
+=======
+    st.write('Predicted files will be downloaded after predicting completed')
+>>>>>>> 6965cf65656f0d9b204b818729117ac0b44bb916
 
     uploaded_file = st.file_uploader("Choose a file")
     if uploaded_file is not None:
@@ -39,6 +43,7 @@ def show_predict_churn_from_file():
             dataframe['CLTV Prediction'] = 0
 
             dataframe['Churn Prediction'] = ['Yes' if prob >= 0.5 else 'No' for prob in churn_probabilities]
+<<<<<<< HEAD
             for i in range(1, len(dataframe) + 1):
                 dataframe.at[i-1, 'CLTV Prediction'] = round(data['AdaBoost_CLTV'].predict(dataframe.iloc[(i-1):i, :])[0], 2)
 
@@ -48,3 +53,9 @@ def show_predict_churn_from_file():
             st.plotly_chart(fig)
 
             dataframe.to_excel('predicted_churn_file.xlsx', index=False)
+=======
+            for i in range(1, len(dataframe)):
+                dataframe.at[i-1, 'CLTV Prediction'] = round(data['AdaBoost_CLTV'].predict(dataframe.iloc[(i-1):i, :])[0], 2)
+
+            dataframe
+>>>>>>> 6965cf65656f0d9b204b818729117ac0b44bb916
