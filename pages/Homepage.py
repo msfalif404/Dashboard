@@ -14,3 +14,5 @@ def show_homepage():
     st.divider()
     
     # st.write("""Dataset yang digunakan berasal dari [Kaggle](https://www.kaggle.com/blastchar/telco-customer-churn).""")
+    
+show_homepage()
