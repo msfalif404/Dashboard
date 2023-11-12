@@ -6,7 +6,13 @@ import plotly.graph_objects as go
 
 def show_predict_churn_from_file():
     st.header('Predicting Customer Churn ✨')
-    st.write('Predicted churn spreadsheet file will be downloaded after predicting completed')
+    st.write('''Harap upload file yang berkaitan dengan data customer churn yang ingin diprediksi.''')
+    
+    if st.button("Contoh Dataset"):
+        st.write("Anda mengklik tautan berikut: [klik ini](https://github.com/msfalif404/Dashboard-Telco/blob/main/dataset/dataset_testing.xlsx)")
+        
+    st.divider()
+    st.write('Prediksi dari dataset butuh memakan waktu cukup lama, harap ditunggu')
 
     uploaded_file = st.file_uploader("Choose a file")
     if uploaded_file is not None:
@@ -19,7 +25,6 @@ def show_predict_churn_from_file():
         for i in kolom:
             dataframe[i] = dataframe[i].replace('No internet service', 'No')
 
-        ### Model
         with open('./model.pkl', 'rb') as file:
             data = pickle.load(file)
             
@@ -47,4 +52,4 @@ def show_predict_churn_from_file():
 
             st.plotly_chart(fig)
 
-            dataframe.to_excel('predicted_churn_file.xlsx', index=False)
+            st.write(dataframe)

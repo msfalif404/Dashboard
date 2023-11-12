@@ -5,7 +5,7 @@ from view.Predict_Churn_From_Scratch import show_predict_page_from_scratch
 from view.Dashboard import show_dashboard
 from view.Homepage import show_homepage
 
-page = st.sidebar.selectbox("Select Page", ["Predict Churn From File", "Predict Churn From Scratch", "Dashboard", "Homepage"])
+page = st.sidebar.selectbox("Select Page", ["Homepage", "Predict Churn From File", "Predict Churn From Scratch", "Dashboard"])
 
 if page == "Homepage":
     show_homepage()

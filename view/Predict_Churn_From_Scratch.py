@@ -86,7 +86,6 @@ def show_predict_page_from_scratch():
         })
         st.write(dataframe)
 
-        # data['LocationEncoder']
         dataframe['Location'] = data['LocationEncoder'].transform(dataframe['Location'])
         dataframe['Device Class'] = data['DeviceEncoder'].transform(dataframe['Device Class'])
         dataframe['Games Product'] = data['GamesEncoder'].transform(dataframe['Games Product'])
@@ -99,8 +98,8 @@ def show_predict_page_from_scratch():
 
         churn_prediction = data['LGBM_Churn'].predict_proba(dataframe)
         if churn_prediction[0][1] >= 0.5:
-            st.write(f"Churn: Yes, dengan persentase Yes: {round(churn_prediction[0][1], 2)*100}%")
-            st.write(f"Dengan nilai CLTV: {round(data['AdaBoost_CLTV'].predict(dataframe)[0], 2)}")
+            st.write(f"Pelanggan berpotensi churn dengan persentase churn ----> {round(churn_prediction[0][1], 2)*100}%")
+            st.write(f"Dengan nilai CLTV pelanggan ----> {round(data['AdaBoost_CLTV'].predict(dataframe)[0], 2)}")
         else:
-            st.write(f"Churn: No, dengan persentase No: {round(churn_prediction[0][0], 2)*100}%")
-            st.write(f"Dengan nilai CLTV: {round(data['AdaBoost_CLTV'].predict(dataframe)[0], 2)}")
+            st.write(f"Pelanggan berpotensi retain dengan persentase retain ----> {round(churn_prediction[0][0], 2)*100}%")
+            st.write(f"Dengan nilai CLTV pelanggan ----> {round(data['AdaBoost_CLTV'].predict(dataframe)[0], 2)}")
