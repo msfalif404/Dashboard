@@ -19,20 +19,17 @@ def show_predict_page_from_scratch():
 
     GAMES_PRODUCT = [
         'Yes',
-        'No',
-        'No internet service'
+        'No'
     ]
 
     MUSIC_PRODUCT = [
         'Yes',
-        'No',
-        'No internet service'   
+        'No'   
     ]
 
     EDUCATION_PRODUCT = [
         'Yes',
-        'No',
-        'No internet service'
+        'No'
     ]
 
     CALL_CENTER = [
@@ -42,14 +39,12 @@ def show_predict_page_from_scratch():
 
     VIDEO_PRODUCT = [
         'Yes',
-        'No',
-        'No internet service'
+        'No'
     ]
 
     USE_MY_APP = [
         'Yes',
-        'No',
-        'No internet service'
+        'No'
     ]
 
     PAYMENT_METHOD = [
