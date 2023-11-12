@@ -33,6 +33,10 @@ if uploaded_file is not None:
         churn_prediction = data['LGBM_Churn'].predict_proba(dataframe)
         churn_probabilities = churn_prediction[:, 1]
 
+        dataframe['CLTV Prediction'] = 0
+
         dataframe['Churn Prediction'] = ['Yes' if prob >= 0.5 else 'No' for prob in churn_probabilities]
-        dataframe['CLTV Prediction'] = round(data['AdaBoost_CLTV'].predict(dataframe.iloc[0])[0], 2)
-        dataframe
+        for i in range(1, len(dataframe)):
+            dataframe['CLTV Prediction'] = round(data['AdaBoost_CLTV'].predict(dataframe.iloc[(i-1):i, :])[0], 2)
+
+        dataframe.iloc[1]['CLTV Prediction']
