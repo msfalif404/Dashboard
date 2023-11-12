@@ -9,15 +9,12 @@ import plotly.graph_objects as go
 from helper.categorize_tenure import categorize_tenure
 from sklearn.cluster import KMeans
 
-def dashboard():
-    # Reading The Dataset
+def show_dashboard():
     df = pd.read_excel('telco_dataset.xlsx')
     df.rename(columns={'Monthly Purchase (Thou. IDR)' : 'Monthly Purchase', 'CLTV (Predicted Thou. IDR)' : 'CLTV'}, inplace=True)
 
-    # Categorizing Customer By Tenure Months
     df['Tenure Status'] = df['Tenure Months'].apply(categorize_tenure)
 
-    # Creating Dataframe Contains All Churned Customer
     tenure_class = df['Tenure Status'].unique()
     for i in tenure_class:
         df_churn = df[df['Tenure Status'] == i]['Churn Label'].value_counts().reset_index()
@@ -40,7 +37,6 @@ def dashboard():
 
     col1, col2 = st.columns(2)
 
-    # Calculating Churn and Retain Percentage
     total_customers = df['Customer ID'].nunique()
     churn_customers = df[df['Churn Label'] == 'Yes']['Customer ID'].nunique()
     retain_customers = df[df['Churn Label'] == 'No']['Customer ID'].nunique()
