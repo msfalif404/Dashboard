@@ -1,9 +1,12 @@
 import streamlit as st
 import pandas as pd
 import pickle
+import plotly.express as px
+import plotly.graph_objects as go
 
 def show_predict_churn_from_file():
     st.header('Predicting Customer Churn ✨')
+    st.write('Predicted churn spreadsheet file will be downloaded after predicting completed')
 
     uploaded_file = st.file_uploader("Choose a file")
     if uploaded_file is not None:
@@ -36,7 +39,12 @@ def show_predict_churn_from_file():
             dataframe['CLTV Prediction'] = 0
 
             dataframe['Churn Prediction'] = ['Yes' if prob >= 0.5 else 'No' for prob in churn_probabilities]
-            for i in range(1, len(dataframe)):
-                dataframe['CLTV Prediction'] = round(data['AdaBoost_CLTV'].predict(dataframe.iloc[(i-1):i, :])[0], 2)
+            for i in range(1, len(dataframe) + 1):
+                dataframe.at[i-1, 'CLTV Prediction'] = round(data['AdaBoost_CLTV'].predict(dataframe.iloc[(i-1):i, :])[0], 2)
 
-            dataframe.iloc[1]['CLTV Prediction']
+            churn_counts = dataframe['Churn Prediction'].value_counts()
+            fig = px.pie(churn_counts, values=churn_counts.values, names=churn_counts.index, title='Churn Prediction Distribution')
+
+            st.plotly_chart(fig)
+
+            dataframe.to_excel('predicted_churn_file.xlsx', index=False)
